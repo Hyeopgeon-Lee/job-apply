@@ -105,3 +105,37 @@ DNS 반영 뒤 GitHub **Settings → Pages → Custom domain**에 `apply.k-bigda
 - URL은 `http://` 또는 `https://`만 허용합니다.
 - 로그인 없는 공개 서비스이므로 등록 자체의 신원 인증은 하지 않습니다. 시트와 Apps Script 프로젝트의 편집 권한은 관리자만 보유하세요.
 - Apps Script 할당량을 초과하면 일시적으로 요청이 실패할 수 있습니다.
+
+## 취업지원 일일 이메일
+
+`apps-script/DailyReport.gs`는 같은 Google Sheet를 직접 집계하여 월요일~금요일 오전 8시 전후에 담당자에게 HTML 현황 메일을 보냅니다. 외부 API나 AI 서비스는 사용하지 않으며 `ACTIVE` 지원과 `active=TRUE` 학생만 집계합니다. 주간 실적은 `applied_date`, 전일 신규 등록은 `created_at` 기준입니다.
+
+Apps Script 편집기에서 새 스크립트 파일 `DailyReport.gs`를 만들고 저장소의 동명 파일 전체를 붙여 넣습니다. 다음으로 `setupDailyReportSettings()`를 한 번 실행하면 `settings` 시트에 아래 항목이 추가됩니다.
+
+| key | value |
+|---|---|
+| report_enabled | TRUE |
+| report_email | 담당 교수 이메일 주소 |
+| report_subject_prefix | 취업지원현황 |
+
+메일 주소는 코드에 넣지 말고 `report_email` 셀에 입력합니다. `report_enabled`가 `FALSE`이거나 이메일이 비어 있으면 자동 발송하지 않고 실행 로그에 이유를 남깁니다.
+
+### 테스트 메일과 권한 승인
+
+1. `report_email`을 입력합니다.
+2. Apps Script에서 `sendWeekdayReportTest()`를 실행하면 월~목 템플릿을 즉시 발송합니다.
+3. `sendFridayReportTest()`를 실행하면 금요일 최종점검 템플릿을 즉시 발송합니다.
+4. `sendDailyJobReportTest()`는 현재 요일에 맞는 템플릿을 발송합니다.
+5. 최초 실행 시 Google 계정의 메일 발송 권한 요청을 검토하고 허용합니다.
+
+테스트 제목에는 `[TEST]`가 붙으며 같은 날에도 반복 실행할 수 있습니다. 운영 메일은 `PropertiesService`의 `LAST_DAILY_REPORT_DATE`로 같은 날짜의 중복 발송을 방지합니다.
+
+### 평일 오전 자동 발송
+
+Apps Script에서 `createDailyReportTrigger()`를 최초 한 번 실행하고 트리거 생성 권한을 승인합니다. 기존 동일 트리거를 제거한 뒤 하나만 생성하므로 중복 트리거가 생기지 않습니다. 트리거는 매일 실행되지만 `sendDailyJobReport()`가 토요일과 일요일에는 즉시 종료합니다.
+
+Google Apps Script 시간 기반 트리거는 일반 cron과 달리 정확한 `08:00:00`을 보장하지 않으며 **Asia/Seoul 오전 8시 전후**에 실행됩니다. 트리거를 제거하려면 `deleteDailyReportTriggers()`를 실행합니다.
+
+월~목 메일은 진행관리용으로 관리 필요 학생, 전일 신규 등록, 전체 학생 주간 현황을 보여줍니다. 금요일 메일은 면담·독려 우선 학생을 강조하고 목표 달성 학생과 주간 요약을 함께 제공합니다.
+
+수신 주소를 변경하려면 `settings` 시트의 `report_email`만 수정합니다. 메일 기능은 기존 웹 API와 독립적이므로 발송 실패가 지원 등록에 영향을 주지 않습니다. `DailyReport.gs`를 추가하는 작업만으로는 웹앱 URL이 바뀌지 않으며, 기존 API 코드까지 변경하지 않았다면 웹앱 재배포는 필수가 아닙니다.
