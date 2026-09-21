@@ -1,4 +1,4 @@
-const SPREADSHEET_ID = '여기에_구글시트_ID';
+const SPREADSHEET_ID = '11s6uWfCT6pqxKMNmbN8Gt8tbT--kdb43rghb0UeJHzI';
 const TIMEZONE = 'Asia/Seoul';
 const SHEETS = { STUDENTS: 'students', APPLICATIONS: 'applications', SETTINGS: 'settings' };
 const STUDENT_HEADERS = ['student_id', 'name', 'pin', 'active'];

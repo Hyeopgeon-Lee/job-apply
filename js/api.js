@@ -1,4 +1,4 @@
-const API_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzOm0CkN59LybvwRtMXRu0BmOxsPJloLwlPLHL5s_6NCSBeFxVvsH6Q6ObHmgwTrSuDLA/exec';
 
 function isApiConfigured() {
   return /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(API_URL);
