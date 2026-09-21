@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#3157d5">
+  <meta name="description" content="빅데이터소프트웨어공학과 학생들의 입사지원 현황">
+  <title>BigData Job Apply</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container"><p>빅데이터소프트웨어공학과</p><h1>취업지원 현황</h1></div>
+  </header>
+  <main class="container main-content">
+    <div id="loading" class="state-card" role="status"><span class="spinner"></span><p>지원 현황을 불러오고 있어요</p></div>
+    <div id="error-state" class="state-card" hidden><p id="error-message"></p><button id="retry-button" class="button button-secondary" type="button">다시 시도</button></div>
+    <div id="dashboard" hidden>
+      <section class="summary-card" aria-labelledby="summary-title">
+        <p id="summary-title" class="eyebrow">이번 주 학과 전체 지원</p>
+        <strong id="weekly-count" class="big-number">0건</strong>
+        <div class="goal-line"><span>이번 주 목표</span><strong id="weekly-goal">0건</strong></div>
+        <div id="goal-progress-wrap" class="progress" role="progressbar" aria-label="주간 목표 달성률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="goal-progress"></span></div>
+        <p id="goal-percent" class="goal-copy"></p>
+      </section>
+      <section class="section-card" aria-labelledby="students-title">
+        <div class="section-heading"><div><p class="eyebrow">함께 만드는 기록</p><h2 id="students-title">학생별 지원 현황</h2></div><span class="period-badge">이번 주</span></div>
+        <ul id="student-list" class="student-list"></ul>
+      </section>
+      <section aria-labelledby="recent-title">
+        <div class="section-heading outside"><div><p class="eyebrow">새로운 도전</p><h2 id="recent-title">최근 입사지원</h2></div></div>
+        <p id="recent-empty" class="empty-card" hidden>아직 등록된 지원 내역이 없습니다.<br>첫 지원 현황을 등록해 보세요!</p>
+        <div id="recent-list" class="recent-list"></div>
+      </section>
+    </div>
+  </main>
+  <a class="button floating-action" href="register.html"><span aria-hidden="true">＋</span> 지원현황 등록하기</a>
+  <dialog id="delete-dialog" class="modal">
+    <form id="delete-form" method="dialog">
+      <div class="modal-icon" aria-hidden="true">!</div><h2>지원내역 삭제</h2><p>학생: <strong id="delete-student"></strong></p>
+      <label for="delete-pin">본인 확인번호</label><input id="delete-pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required placeholder="4자리 PIN">
+      <p id="delete-error" class="form-error" aria-live="polite"></p>
+      <div class="modal-actions"><button id="delete-cancel" class="button button-ghost" type="button">취소</button><button id="delete-submit" class="button button-danger" type="submit">삭제하기</button></div>
+    </form>
+  </dialog>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
