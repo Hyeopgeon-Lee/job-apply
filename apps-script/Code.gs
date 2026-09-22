@@ -66,10 +66,18 @@ function getDashboard_() {
     const date = dateOnly_(app.applied_date);
     return date >= range.start && date <= range.end;
   });
-  const counts = {};
-  weeklyApps.forEach(function(app) { counts[app.student_id] = (counts[app.student_id] || 0) + 1; });
+  const currentMonth = Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM');
+  const monthlyApps = applications.filter(function(app) {
+    return Utilities.formatDate(dateOnly_(app.applied_date), TIMEZONE, 'yyyy-MM') === currentMonth;
+  });
+  const weeklyCounts = {};
+  const monthlyCounts = {};
+  const cumulativeCounts = {};
+  weeklyApps.forEach(function(app) { weeklyCounts[app.student_id] = (weeklyCounts[app.student_id] || 0) + 1; });
+  monthlyApps.forEach(function(app) { monthlyCounts[app.student_id] = (monthlyCounts[app.student_id] || 0) + 1; });
+  applications.forEach(function(app) { cumulativeCounts[app.student_id] = (cumulativeCounts[app.student_id] || 0) + 1; });
   const studentRows = students.map(function(student) {
-    return { studentId: student.student_id, name: student.name, weeklyCount: counts[student.student_id] || 0, weeklyGoal: weeklyGoal };
+    return { studentId: student.student_id, name: student.name, weeklyCount: weeklyCounts[student.student_id] || 0, monthlyCount: monthlyCounts[student.student_id] || 0, cumulativeCount: cumulativeCounts[student.student_id] || 0, weeklyGoal: weeklyGoal };
   }).sort(function(a, b) { return b.weeklyCount - a.weeklyCount || a.name.localeCompare(b.name, 'ko'); });
   const names = {};
   students.forEach(function(student) { names[student.student_id] = student.name; });
@@ -77,7 +85,7 @@ function getDashboard_() {
     return timestamp_(b.created_at) - timestamp_(a.created_at);
   }).slice(0, 20).map(function(app) { return publicApplication_(app, names[app.student_id] || '알 수 없음'); });
   return {
-    summary: { weeklyCount: weeklyApps.length, weeklyGoal: students.length * weeklyGoal, activeStudentCount: students.length, perStudentGoal: weeklyGoal, weekStart: formatDate_(range.start), weekEnd: formatDate_(range.end) },
+    summary: { weeklyCount: weeklyApps.length, monthlyCount: monthlyApps.length, cumulativeCount: applications.length, weeklyGoal: students.length * weeklyGoal, activeStudentCount: students.length, perStudentGoal: weeklyGoal, weekStart: formatDate_(range.start), weekEnd: formatDate_(range.end) },
     students: studentRows,
     recent: recent
   };
@@ -115,7 +123,8 @@ function createApplication_(params) {
     const row = [Utilities.getUuid(), studentId, company, position, site, jobUrl, formatDate_(appliedDate), 'ACTIVE', now, now];
     const sheet = sheet_(SHEETS.APPLICATIONS, APPLICATION_HEADERS);
     sheet.appendRow(row);
-    return { applicationId: row[0], studentName: student.name, previousWeeklyCount: previousWeeklyCount, currentWeeklyCount: previousWeeklyCount + (appliedDate >= range.start && appliedDate <= range.end ? 1 : 0), weeklyGoal: weeklyGoal, goalAchievedNow: previousWeeklyCount < weeklyGoal && previousWeeklyCount + (appliedDate >= range.start && appliedDate <= range.end ? 1 : 0) >= weeklyGoal };
+    const isCurrentWeek = appliedDate >= range.start && appliedDate <= range.end;
+    return { applicationId: row[0], studentName: student.name, previousWeeklyCount: previousWeeklyCount, currentWeeklyCount: previousWeeklyCount + (isCurrentWeek ? 1 : 0), weeklyGoal: weeklyGoal, isCurrentWeek: isCurrentWeek, goalAchievedNow: isCurrentWeek && previousWeeklyCount < weeklyGoal && previousWeeklyCount + 1 >= weeklyGoal };
   } finally {
     lock.releaseLock();
   }

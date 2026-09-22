@@ -33,6 +33,8 @@ async function loadDashboard() {
 function renderSummary(summary) {
   $('#weekly-count').textContent = `${summary.weeklyCount}건`;
   $('#weekly-goal').textContent = `${summary.weeklyGoal}건`;
+  $('#monthly-count').textContent = `${summary.monthlyCount || 0}건`;
+  $('#cumulative-count').textContent = `${summary.cumulativeCount || 0}건`;
   const percent = summary.weeklyGoal ? Math.min(100, Math.round(summary.weeklyCount / summary.weeklyGoal * 100)) : 0;
   $('#goal-progress').style.width = `${percent}%`;
   $('#goal-progress-wrap').setAttribute('aria-valuenow', String(percent));
@@ -47,7 +49,7 @@ function renderStudents(students) {
     const item = document.createElement('li');
     item.className = 'student-row';
     const achieved = student.weeklyCount >= student.weeklyGoal;
-    item.innerHTML = `<span class="student-name"></span><strong>${student.weeklyCount}건</strong><span class="goal-state ${achieved ? 'achieved' : ''}">${achieved ? '목표 달성' : `${student.weeklyGoal - student.weeklyCount}건 남음`}</span>`;
+    item.innerHTML = `<span class="student-name"></span><span class="student-count"><strong>${student.weeklyCount}건</strong><small>누적 ${student.cumulativeCount || 0}건</small></span><span class="goal-state ${achieved ? 'achieved' : ''}">${achieved ? '목표 달성' : `${student.weeklyGoal - student.weeklyCount}건 남음`}</span>`;
     item.querySelector('.student-name').textContent = student.name;
     return item;
   }));

@@ -40,7 +40,11 @@ async function submitApplication(event) {
     $('#before-count').textContent = `${result.previousWeeklyCount}건`;
     $('#after-count').textContent = `${result.currentWeeklyCount}건`;
     const message = $('#goal-message');
-    message.textContent = result.goalAchievedNow ? '이번 주 목표를 달성했습니다.' : `이번 주 목표까지 ${Math.max(0, result.weeklyGoal - result.currentWeeklyCount)}건 남았습니다.`;
+    message.textContent = !result.isCurrentWeek
+      ? '등록한 지원일이 이번 주가 아니어서 이번 주 통계에는 포함되지 않습니다.'
+      : result.goalAchievedNow
+        ? '이번 주 목표를 달성했습니다.'
+        : `이번 주 목표까지 ${Math.max(0, result.weeklyGoal - result.currentWeeklyCount)}건 남았습니다.`;
     $('#success-card').hidden = false;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (error) {
