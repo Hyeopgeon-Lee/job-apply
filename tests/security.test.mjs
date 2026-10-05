@@ -49,3 +49,16 @@ test('student cannot delete another student application; own deletion is soft',(
   assert.equal(c.doPost({parameter:{action:'delete',token,application_id:'A-APP'}}).success,true);
   assert.equal(rows[1][2],'DELETED');assert.equal(rows[2][2],'ACTIVE');assert.equal(rows.length,3);
 });
+test('security frontend assets are version-aligned and hidden controls stay hidden',()=>{
+  const root=new URL('../',import.meta.url),version='20261005-session-1';
+  for(const file of ['index.html','register.html']) {
+    const html=readFileSync(new URL(file,root),'utf8');
+    assert.ok(html.includes('css/style.css?v='+version));
+    assert.match(html,new RegExp('js/(app|register)\\.js\\?v='+version));
+    assert.match(html,/noindex,\s*nofollow,\s*noarchive/);
+  }
+  for(const file of ['js/app.js','js/register.js'])assert.ok(readFileSync(new URL(file,root),'utf8').includes('./api.js?v='+version));
+  const css=readFileSync(new URL('css/style.css',root),'utf8');
+  assert.match(css,/\[hidden\]\s*\{\s*display:\s*none\s*!important/);
+  assert.match(css,/\.text-button\s*\{[^}]*min-height:\s*44px/);
+});
