@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow, noarchive"><meta name="theme-color" content="#0b1739">
   <title>지원현황 등록 | BigData Job Apply</title>
-  <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="css/style.css?v=20261005-portal2">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="css/style.css?v=20261005-public-1">
 </head>
 <body>
   <header class="site-header">
@@ -24,7 +24,9 @@
     <section id="form-card" class="section-card form-card">
       <div class="form-intro"><p class="eyebrow">오늘의 한 걸음</p><h2>지원한 채용공고를 등록해 주세요</h2><p>지원 기록이 쌓일수록 우리 모두의 도전도 커져요.</p></div>
       <form id="application-form">
-        <div class="identity-card" aria-label="로그인 학생"><span>로그인 학생</span><strong id="current-student-name"></strong><small id="current-student-id"></small></div>
+        <div class="identity-card" aria-label="학생 확인"><span>학생 확인</span><strong>학번과 PIN으로 본인 확인</strong><small>로그인 없이 등록할 때만 확인합니다.</small></div>
+        <label for="student-id">학번 <span>필수</span></label><input id="student-id" name="student_id" inputmode="numeric" autocomplete="username" required>
+        <label for="student-pin">4자리 PIN <span>필수</span></label><input id="student-pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="current-password" required>
         <label for="company">기업명 <span>필수</span></label><input id="company" name="company" maxlength="100" required placeholder="예: ABC정보기술">
         <label for="position">지원직무 <span>필수</span></label><input id="position" name="position" maxlength="100" required placeholder="예: Java 백엔드 개발자">
         <label for="site">지원사이트 <span>필수</span></label><select id="site" name="site" required><option value="">지원사이트를 선택해 주세요</option><option>사람인</option><option>잡코리아</option><option>원티드</option><option>고용24</option><option>기업 채용사이트</option><option>기타</option></select>
@@ -35,6 +37,6 @@
     </section>
     <section id="success-card" class="success-card" hidden><div class="success-check" aria-hidden="true">✓</div><p class="eyebrow">등록 완료</p><h2>등록되었습니다.</h2><strong id="success-name" class="success-name"></strong><p class="count-change">이번 주 <span id="before-count"></span> <b>→</b> <span id="after-count"></span></p><p id="goal-message" class="success-message"></p><a class="button button-primary" href="index.html">메인 화면으로</a></section>
   </main>
-  <script type="module" src="js/register.js?v=20261005-session-1"></script>
+  <script type="module" src="js/register.js?v=20261005-public-1"></script>
 </body>
 </html>
