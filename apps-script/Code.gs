@@ -213,7 +213,7 @@ function getSettings_() {
 }
 
 function publicApplication_(app, studentName) {
-  return { applicationId: app.application_id, studentId: app.student_id, studentName: studentName, company: app.company, position: app.position, site: app.site, jobUrl: normalizeUrl_(app.job_url), appliedDate: formatDate_(dateOnly_(app.applied_date)) };
+  return { applicationId: app.application_id, studentName: studentName, company: app.company, position: app.position, site: app.site, jobUrl: normalizeUrl_(app.job_url), appliedDate: formatDate_(dateOnly_(app.applied_date)) };
 }
 
 function spreadsheet_() {
