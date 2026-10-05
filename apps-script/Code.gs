@@ -4,8 +4,6 @@ const STUDENT_HEADERS = ['student_id', 'name', 'pin', 'active'];
 const APPLICATION_HEADERS = ['application_id', 'student_id', 'company', 'position', 'site', 'job_url', 'applied_date', 'status', 'created_at', 'updated_at'];
 const SETTINGS_HEADERS = ['key', 'value'];
 const ALLOWED_SITES = ['사람인', '잡코리아', '원티드', '고용24', '기업 채용사이트', '기타'];
-const SESSION_TTL_SECONDS = 6 * 60 * 60;
-const SESSION_PREFIX = 'job-apply-session:';
 
 function doGet(e) {
   return handleRequest_(e, 'GET');
@@ -62,34 +60,6 @@ function migrateStudentPins() {
     }
   }
   return { migrated: migrated };
-}
-
-function login_(params) {
-  const studentId = required_(params.student_id, '학번을 입력해 주세요.');
-  const pin = String(params.pin || '').trim();
-  if (!/^\d{4}$/.test(pin)) throw new Error('4자리 PIN을 입력해 주세요.');
-  const student = getStudents_().find(function(row) { return row.student_id === studentId && row.active; });
-  if (!student || !verifyStudentPin_(student.pin, pin)) throw new Error('학번 또는 PIN을 확인해 주세요.');
-  const token = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
-  CacheService.getScriptCache().put(SESSION_PREFIX + token, student.student_id, SESSION_TTL_SECONDS);
-  return { token: token, expiresIn: SESSION_TTL_SECONDS, student: { studentId: student.student_id, name: student.name } };
-}
-
-function logout_(params) {
-  const token = String(params.token || '').trim();
-  if (token) CacheService.getScriptCache().remove(SESSION_PREFIX + token);
-  return { loggedOut: true };
-}
-
-function requireSession_(token) {
-  const value = String(token || '').trim();
-  if (!value) throw new Error('로그인이 필요합니다.');
-  const studentId = CacheService.getScriptCache().get(SESSION_PREFIX + value);
-  if (!studentId) throw new Error('로그인이 만료되었습니다. 다시 로그인해 주세요.');
-  const student = getStudents_().find(function(row) { return row.student_id === String(studentId) && row.active; });
-  if (!student) throw new Error('학생 정보를 확인할 수 없습니다.');
-  CacheService.getScriptCache().put(SESSION_PREFIX + value, student.student_id, SESSION_TTL_SECONDS);
-  return student;
 }
 
 function authenticateStudent_(params) {
