@@ -49,12 +49,29 @@ function setupSheets() {
   });
 }
 
+function migrateStudentPins() {
+  const salt = pinSalt_();
+  if (!salt) throw new Error('Script Properties에 PIN_SALT를 설정해 주세요.');
+  const sheet = sheet_(SHEETS.STUDENTS, STUDENT_HEADERS);
+  const values = sheet.getDataRange().getValues();
+  const pinIndex = STUDENT_HEADERS.indexOf('pin');
+  let migrated = 0;
+  for (let i = 1; i < values.length; i += 1) {
+    const current = String(values[i][pinIndex] || '').trim();
+    if (/^\d{4}$/.test(current)) {
+      sheet.getRange(i + 1, pinIndex + 1).setValue(hashStudentPin_(current));
+      migrated += 1;
+    }
+  }
+  return { migrated: migrated };
+}
+
 function login_(params) {
   const studentId = required_(params.student_id, '학번을 입력해 주세요.');
   const pin = String(params.pin || '').trim();
   if (!/^\d{4}$/.test(pin)) throw new Error('4자리 PIN을 입력해 주세요.');
   const student = getStudents_().find(function(row) { return row.student_id === studentId && row.active; });
-  if (!student || !secureEqual_(student.pin, pin)) throw new Error('학번 또는 PIN을 확인해 주세요.');
+  if (!student || !verifyStudentPin_(student.pin, pin)) throw new Error('학번 또는 PIN을 확인해 주세요.');
   const token = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
   CacheService.getScriptCache().put(SESSION_PREFIX + token, student.student_id, SESSION_TTL_SECONDS);
   return { token: token, expiresIn: SESSION_TTL_SECONDS, student: { studentId: student.student_id, name: student.name } };
@@ -251,6 +268,22 @@ function normalizeUrl_(value) { const url = required_(value, '채용공고 URL�
 function normalizeComparableUrl_(value) { return String(value).trim().replace(/\/$/, '').toLowerCase(); }
 function positiveInteger_(value, fallback) { const number = Number(value); return Number.isInteger(number) && number > 0 ? number : fallback; }
 function boolean_(value) { return value === true || String(value).toUpperCase() === 'TRUE' || String(value) === '1'; }
+function pinSalt_() {
+  return String(PropertiesService.getScriptProperties().getProperty('PIN_SALT') || '').trim();
+}
+function hashStudentPin_(pin) {
+  const salt = pinSalt_();
+  if (!salt) throw new Error('Script Properties에 PIN_SALT를 설정해 주세요.');
+  return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, salt + '|' + String(pin), Utilities.Charset.UTF_8)
+    .map(function(byte) { return (byte + 256) % 256; })
+    .map(function(byte) { return byte.toString(16).padStart(2, '0'); })
+    .join('');
+}
+function verifyStudentPin_(stored, pin) {
+  const value = String(stored || '').trim();
+  if (/^[a-f0-9]{64}$/i.test(value)) return secureEqual_(value.toLowerCase(), hashStudentPin_(pin));
+  return secureEqual_(value, String(pin));
+}
 function secureEqual_(left, right) {
   left = String(left || ''); right = String(right || '');
   let diff = left.length ^ right.length;
