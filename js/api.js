@@ -4,21 +4,10 @@ function isApiConfigured() {
   return /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(API_URL);
 }
 
-async function request(action, params = {}, method = 'GET') {
-  if (!isApiConfigured()) {
-    throw new Error('Apps Script 웹앱 URL이 아직 설정되지 않았습니다.');
-  }
-
-  let response;
-  if (method === 'POST') {
-    const body = new URLSearchParams({ action, ...params });
-    response = await fetch(API_URL, { method: 'POST', body });
-  } else {
-    const url = new URL(API_URL);
-    url.search = new URLSearchParams({ action, ...params }).toString();
-    response = await fetch(url);
-  }
-
+async function request(action, params = {}) {
+  if (!isApiConfigured()) throw new Error('Apps Script 웹앱 URL이 아직 설정되지 않았습니다.');
+  const body = new URLSearchParams({ action, ...params });
+  const response = await fetch(API_URL, { method: 'POST', body });
   if (!response.ok) throw new Error('서버에 연결할 수 없습니다.');
   const result = await response.json();
   if (!result.success) throw new Error(result.message || '요청을 처리하지 못했습니다.');
@@ -27,8 +16,9 @@ async function request(action, params = {}, method = 'GET') {
 
 export const api = {
   configured: isApiConfigured,
-  getDashboard: () => request('dashboard'),
-  getStudents: () => request('students'),
-  createApplication: (payload) => request('create', payload, 'POST'),
-  deleteApplication: (payload) => request('delete', payload, 'POST'),
+  login: (studentId, pin) => request('login', { student_id: studentId, pin }),
+  logout: (token) => request('logout', { token }),
+  getDashboard: (token) => request('dashboard', { token }),
+  createApplication: (payload, token) => request('create', { ...payload, token }),
+  deleteApplication: (applicationId, token) => request('delete', { application_id: applicationId, token }),
 };
