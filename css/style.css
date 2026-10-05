@@ -14,6 +14,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { color: var(--ink); background: var(--background); font-family: Pretendard, "Noto Sans KR", system-ui, -apple-system, sans-serif; }
 body { min-height: 100vh; margin: 0; padding-bottom: 104px; background: linear-gradient(180deg, var(--primary-soft) 0, var(--background) 420px); }
 button, input, select { font: inherit; }
@@ -65,7 +66,7 @@ button, input, select { font: inherit; }
 .button-secondary { color: var(--primary); background: var(--primary-soft); }
 .button-ghost { color: var(--ink); background: #edf2f7; }
 .button-danger { color: #fff; background: var(--danger); }
-.text-button { padding: 8px; border: 0; color: var(--danger); background: transparent; text-decoration: underline; cursor: pointer; }
+.text-button { min-width: 44px; min-height: 44px; padding: 8px; border: 0; color: var(--danger); background: transparent; text-decoration: underline; cursor: pointer; }
 .floating-action { position: fixed; z-index: 5; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); width: min(calc(100% - 32px), 520px); min-height: 60px; transform: translateX(-50%); color: #fff; background: var(--primary); box-shadow: 0 12px 30px rgba(16, 42, 67, .24); font-size: 1rem; }
 .floating-action span { margin-right: 6px; font-size: 1.35rem; }
 .state-card, .empty-card { padding: 42px 20px; text-align: center; }
@@ -99,6 +100,15 @@ button, input, select { font: inherit; }
 .success-card .button { width: 100%; margin-top: 12px; }
 .form-card select:disabled { background: #f0f4f8; }
 .form-card input::placeholder { color: #829ab1; }
+
+
+.auth-card { margin-top: 0; }
+.session-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 2px 14px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,.88); }
+.session-bar span { color:var(--muted); font-size:.86rem; }
+.session-bar strong { color:var(--navy); }
+.identity-card { margin:18px 0 8px; padding:16px; border:1px solid var(--line); border-radius:12px; background:var(--primary-soft); }
+.identity-card span,.identity-card small { display:block; color:var(--muted); font-size:.78rem; }
+.identity-card strong { display:block; margin:4px 0 2px; color:var(--navy); font-size:1.08rem; }
 
 @media (min-width: 700px) {
   body { padding-bottom: 120px; }

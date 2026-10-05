@@ -4,6 +4,8 @@ const STUDENT_HEADERS = ['student_id', 'name', 'pin', 'active'];
 const APPLICATION_HEADERS = ['application_id', 'student_id', 'company', 'position', 'site', 'job_url', 'applied_date', 'status', 'created_at', 'updated_at'];
 const SETTINGS_HEADERS = ['key', 'value'];
 const ALLOWED_SITES = ['사람인', '잡코리아', '원티드', '고용24', '기업 채용사이트', '기타'];
+const SESSION_TTL_SECONDS = 6 * 60 * 60;
+const SESSION_PREFIX = 'job-apply-session:';
 
 function doGet(e) {
   return handleRequest_(e, 'GET');
@@ -16,12 +18,14 @@ function doPost(e) {
 function handleRequest_(e, method) {
   try {
     const params = (e && e.parameter) || {};
-    const action = String(params.action || 'dashboard');
+    const action = String(params.action || 'health');
     let data;
-    if (method === 'GET' && action === 'dashboard') data = getDashboard_();
-    else if (method === 'GET' && action === 'students') data = getPublicStudents_();
-    else if (method === 'POST' && action === 'create') data = createApplication_(params);
-    else if (method === 'POST' && action === 'delete') data = deleteApplication_(params);
+    if (method === 'GET' && action === 'health') data = { status: 'ok', time: new Date().toISOString() };
+    else if (method === 'POST' && action === 'login') data = login_(params);
+    else if (method === 'POST' && action === 'logout') data = logout_(params);
+    else if (method === 'POST' && action === 'dashboard') data = getDashboard_(requireSession_(params.token));
+    else if (method === 'POST' && action === 'create') data = createApplication_(params, requireSession_(params.token));
+    else if (method === 'POST' && action === 'delete') data = deleteApplication_(params, requireSession_(params.token));
     else throw new Error('지원하지 않는 요청입니다.');
     return json_({ success: true, data: data });
   } catch (error) {
@@ -43,6 +47,51 @@ function setupSheets() {
     sheet.getRange(1, 1, 1, sheet.getLastColumn()).setFontWeight('bold').setBackground('#3157d5').setFontColor('#ffffff');
     sheet.autoResizeColumns(1, sheet.getLastColumn());
   });
+}
+
+function migrateStudentPins() {
+  const salt = pinSalt_();
+  if (!salt) throw new Error('Script Properties에 PIN_SALT를 설정해 주세요.');
+  const sheet = sheet_(SHEETS.STUDENTS, STUDENT_HEADERS);
+  const values = sheet.getDataRange().getValues();
+  const pinIndex = STUDENT_HEADERS.indexOf('pin');
+  let migrated = 0;
+  for (let i = 1; i < values.length; i += 1) {
+    const current = String(values[i][pinIndex] || '').trim();
+    if (/^\d{4}$/.test(current)) {
+      sheet.getRange(i + 1, pinIndex + 1).setValue(hashStudentPin_(current));
+      migrated += 1;
+    }
+  }
+  return { migrated: migrated };
+}
+
+function login_(params) {
+  const studentId = required_(params.student_id, '학번을 입력해 주세요.');
+  const pin = String(params.pin || '').trim();
+  if (!/^\d{4}$/.test(pin)) throw new Error('4자리 PIN을 입력해 주세요.');
+  const student = getStudents_().find(function(row) { return row.student_id === studentId && row.active; });
+  if (!student || !verifyStudentPin_(student.pin, pin)) throw new Error('학번 또는 PIN을 확인해 주세요.');
+  const token = (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, '');
+  CacheService.getScriptCache().put(SESSION_PREFIX + token, student.student_id, SESSION_TTL_SECONDS);
+  return { token: token, expiresIn: SESSION_TTL_SECONDS, student: { studentId: student.student_id, name: student.name } };
+}
+
+function logout_(params) {
+  const token = String(params.token || '').trim();
+  if (token) CacheService.getScriptCache().remove(SESSION_PREFIX + token);
+  return { loggedOut: true };
+}
+
+function requireSession_(token) {
+  const value = String(token || '').trim();
+  if (!value) throw new Error('로그인이 필요합니다.');
+  const studentId = CacheService.getScriptCache().get(SESSION_PREFIX + value);
+  if (!studentId) throw new Error('로그인이 만료되었습니다. 다시 로그인해 주세요.');
+  const student = getStudents_().find(function(row) { return row.student_id === String(studentId) && row.active; });
+  if (!student) throw new Error('학생 정보를 확인할 수 없습니다.');
+  CacheService.getScriptCache().put(SESSION_PREFIX + value, student.student_id, SESSION_TTL_SECONDS);
+  return student;
 }
 
 function getDashboard_() {
@@ -80,25 +129,17 @@ function getDashboard_() {
   };
 }
 
-function getPublicStudents_() {
-  return getStudents_().filter(function(student) { return student.active; }).map(function(student) {
-    return { studentId: student.student_id, name: student.name };
-  });
-}
-
-function createApplication_(params) {
+function createApplication_(params, student) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
-    const studentId = required_(params.student_id, '학생을 선택해 주세요.');
+    const studentId = student.student_id;
     const company = limited_(params.company, '기업명', 100);
     const position = limited_(params.position, '지원직무', 100);
     const site = required_(params.site, '지원사이트를 선택해 주세요.');
     const jobUrl = normalizeUrl_(params.job_url);
     const appliedDate = parseDate_(params.applied_date);
     if (ALLOWED_SITES.indexOf(site) === -1) throw new Error('올바른 지원사이트를 선택해 주세요.');
-    const student = getStudents_().find(function(row) { return row.student_id === studentId && row.active; });
-    if (!student) throw new Error('활성 학생을 찾을 수 없습니다.');
     const applications = getApplications_();
     const duplicate = applications.some(function(app) { return app.student_id === studentId && app.status === 'ACTIVE' && normalizeComparableUrl_(app.job_url) === normalizeComparableUrl_(jobUrl); });
     if (duplicate) throw new Error('이미 등록한 채용공고입니다.');
@@ -119,17 +160,12 @@ function createApplication_(params) {
   }
 }
 
-function deleteApplication_(params) {
+function deleteApplication_(params, student) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
     const applicationId = required_(params.application_id, '지원내역 정보가 없습니다.');
-    const studentId = required_(params.student_id, '학생 정보가 없습니다.');
-    const pin = String(params.pin || '').trim();
-    if (!/^\d{4}$/.test(pin)) throw new Error('4자리 본인 확인번호를 입력해 주세요.');
-    const students = getStudents_();
-    const student = students.find(function(row) { return row.student_id === studentId && row.active; });
-    if (!student || String(student.pin).trim() !== pin) throw new Error('본인 확인번호가 올바르지 않습니다.');
+    const studentId = student.student_id;
     const sheet = sheet_(SHEETS.APPLICATIONS, APPLICATION_HEADERS);
     const values = sheet.getDataRange().getValues();
     const headers = values[0];
@@ -141,7 +177,7 @@ function deleteApplication_(params) {
     for (let i = 1; i < values.length; i += 1) if (String(values[i][idIndex]) === applicationId) { rowNumber = i + 1; break; }
     if (rowNumber === -1) throw new Error('지원내역을 찾을 수 없습니다.');
     const row = values[rowNumber - 1];
-    if (String(row[studentIndex]) !== studentId) throw new Error('해당 지원내역을 삭제할 권한이 없습니다.');
+    if (String(row[studentIndex]) !== studentId) throw new Error('본인의 지원내역만 삭제할 수 있습니다.');
     if (String(row[statusIndex]).toUpperCase() !== 'ACTIVE') throw new Error('이미 삭제된 지원내역입니다.');
     sheet.getRange(rowNumber, statusIndex + 1).setValue('DELETED');
     sheet.getRange(rowNumber, updatedIndex + 1).setValue(new Date());
@@ -232,5 +268,28 @@ function normalizeUrl_(value) { const url = required_(value, '채용공고 URL�
 function normalizeComparableUrl_(value) { return String(value).trim().replace(/\/$/, '').toLowerCase(); }
 function positiveInteger_(value, fallback) { const number = Number(value); return Number.isInteger(number) && number > 0 ? number : fallback; }
 function boolean_(value) { return value === true || String(value).toUpperCase() === 'TRUE' || String(value) === '1'; }
+function pinSalt_() {
+  return String(PropertiesService.getScriptProperties().getProperty('PIN_SALT') || '').trim();
+}
+function hashStudentPin_(pin) {
+  const salt = pinSalt_();
+  if (!salt) throw new Error('Script Properties에 PIN_SALT를 설정해 주세요.');
+  return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, salt + '|' + String(pin), Utilities.Charset.UTF_8)
+    .map(function(byte) { return (byte + 256) % 256; })
+    .map(function(byte) { return byte.toString(16).padStart(2, '0'); })
+    .join('');
+}
+function verifyStudentPin_(stored, pin) {
+  const value = String(stored || '').trim();
+  if (/^[a-f0-9]{64}$/i.test(value)) return secureEqual_(value.toLowerCase(), hashStudentPin_(pin));
+  return secureEqual_(value, String(pin));
+}
+function secureEqual_(left, right) {
+  left = String(left || ''); right = String(right || '');
+  let diff = left.length ^ right.length;
+  const length = Math.max(left.length, right.length);
+  for (let i = 0; i < length; i += 1) diff |= (left.charCodeAt(i % Math.max(1, left.length)) || 0) ^ (right.charCodeAt(i % Math.max(1, right.length)) || 0);
+  return diff === 0;
+}
 function json_(payload) { return ContentService.createTextOutput(JSON.stringify(payload)).setMimeType(ContentService.MimeType.JSON); }
 function safeMessage_(error) { const message = error && error.message ? error.message : '요청을 처리하지 못했습니다.'; return message.indexOf('Exception:') === 0 ? '서버 설정을 확인해 주세요.' : message; }
