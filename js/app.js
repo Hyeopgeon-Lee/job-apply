@@ -1,4 +1,4 @@
-import { api } from './api.js';
+import { api } from './api.js?v=20261005-session-1';
 
 const $ = (selector) => document.querySelector(selector);
 const state = { deleting: null };
