@@ -1,4 +1,3 @@
-const SPREADSHEET_ID = '11s6uWfCT6pqxKMNmbN8Gt8tbT--kdb43rghb0UeJHzI';
 const TIMEZONE = 'Asia/Seoul';
 const SHEETS = { STUDENTS: 'students', APPLICATIONS: 'applications', SETTINGS: 'settings' };
 const STUDENT_HEADERS = ['student_id', 'name', 'pin', 'active'];
@@ -36,18 +35,8 @@ function setupSheets() {
   const students = ensureSheet_(ss, SHEETS.STUDENTS, STUDENT_HEADERS);
   const applications = ensureSheet_(ss, SHEETS.APPLICATIONS, APPLICATION_HEADERS);
   const settings = ensureSheet_(ss, SHEETS.SETTINGS, SETTINGS_HEADERS);
-  if (students.getLastRow() === 1) {
-    const rows = [
-      ['2320110198', '신동준', '', true], ['2520110177', '김동휘', '', true],
-      ['2520110180', '김예가', '', true], ['2520110181', '김현규', '', true],
-      ['2520110184', '박준영', '', true], ['2520110185', '박혜란', '', true],
-      ['2520110187', '배준수', '', true], ['2520110189', '양준모', '', true],
-      ['2520110192', '유호민', '', true], ['2520110194', '윤현섭', '', true],
-      ['2520110195', '이민서', '', true], ['2520110199', '정대현', '', true],
-      ['2520110202', '최준영', '', true]
-    ];
-    students.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
-  }
+  // 학생 명단은 저장소에 하드코딩하지 않습니다.
+  // 운영 Google Sheet의 students 시트에서 직접 관리합니다.
   if (settings.getLastRow() === 1) settings.getRange(2, 1, 2, 2).setValues([['weekly_goal', 5], ['semester', '2026-2']]);
   [students, applications, settings].forEach(function(sheet) {
     sheet.setFrozenRows(1);
@@ -185,8 +174,9 @@ function publicApplication_(app, studentName) {
 }
 
 function spreadsheet_() {
-  if (!SPREADSHEET_ID || SPREADSHEET_ID === '여기에_구글시트_ID') throw new Error('관리자가 Google Sheet ID를 설정해야 합니다.');
-  return SpreadsheetApp.openById(SPREADSHEET_ID);
+  const spreadsheetId = String(PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID') || '').trim();
+  if (!spreadsheetId) throw new Error('관리자가 Script Properties에 SPREADSHEET_ID를 설정해야 합니다.');
+  return SpreadsheetApp.openById(spreadsheetId);
 }
 
 function sheet_(name, expectedHeaders) {
