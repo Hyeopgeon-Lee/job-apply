@@ -24,7 +24,7 @@
 1. Google Drive에서 빈 스프레드시트를 만들고 주소의 `/d/`와 `/edit` 사이 값을 복사합니다. 이것이 `SPREADSHEET_ID`입니다.
 2. 스프레드시트에서 **확장 프로그램 → Apps Script**를 엽니다.
 3. 이 저장소의 `apps-script/Code.gs` 전체를 Apps Script 편집기의 `Code.gs`에 붙여 넣습니다.
-4. Apps Script **프로젝트 설정 → 스크립트 속성**에 `SPREADSHEET_ID` 키로 복사한 ID를 저장합니다.
+4. Apps Script **프로젝트 설정 → 스크립트 속성**에 `SPREADSHEET_ID`와 `PIN_SALT`를 저장합니다. `PIN_SALT`는 32바이트 이상 임의 문자열을 사용하세요.
 5. Apps Script 프로젝트 설정에서 시간대를 **(GMT+09:00) 서울**로 지정합니다.
 6. 상단 함수 선택에서 `setupSheets`를 골라 한 번 실행하고 권한을 승인합니다.
 
@@ -36,7 +36,7 @@
 |---|---|---|---|
 
 
-`pin` 열에 학생마다 서로 다른 **4자리 숫자**를 직접 입력하세요. 셀 서식을 일반 텍스트로 설정하면 `0123` 같은 PIN도 보존됩니다. PIN은 학생 본인에게 개별 전달하고 시트 공유 범위를 제한하세요. 비활성 학생은 `active`를 `FALSE`로 바꾸면 목록과 목표 계산에서 제외됩니다.
+`pin` 열에 학생마다 서로 다른 **4자리 숫자**를 입력한 뒤 `migrateStudentPins()`를 한 번 실행해 salted SHA-256 해시로 전환합니다. 마이그레이션 전의 4자리 평문도 임시 호환하지만 운영 전에는 반드시 해시 전환을 완료하세요. 비활성 학생은 `active`를 `FALSE`로 바꾸면 목록과 목표 계산에서 제외됩니다.
 
 ### applications
 
@@ -67,10 +67,11 @@
 
 학생 세션 인증은 프런트와 GAS가 함께 바뀌므로 **Apps Script를 먼저 새 버전으로 배포한 뒤 GitHub Pages 변경을 반영**해야 합니다. 반대 순서로 배포하면 새 프런트가 기존 API와 호환되지 않습니다.
 
-1. 보안 브랜치의 `apps-script/Code.gs`를 Apps Script에 반영합니다.
-2. **배포 → 배포 관리 → 수정 → 새 버전 → 배포**로 기존 Web App URL의 새 버전을 배포합니다.
-3. `.../exec?action=health`가 정상 응답하는지 확인합니다.
-4. 그 다음 이 브랜치를 `main`에 병합합니다.
+1. Script Properties에 `SPREADSHEET_ID`, `PIN_SALT`를 설정합니다.
+2. 보안 브랜치의 `apps-script/Code.gs`를 Apps Script에 반영하고 `migrateStudentPins()`를 한 번 실행합니다.
+3. **배포 → 배포 관리 → 수정 → 새 버전 → 배포**로 기존 Web App URL의 새 버전을 배포합니다.
+4. `.../exec?action=health`가 정상 응답하는지 확인합니다.
+5. 학번+PIN 로그인과 대시보드 조회를 직접 확인한 뒤 이 브랜치를 `main`에 병합합니다.
 
 ## 3. GitHub Pages 활성화
 
