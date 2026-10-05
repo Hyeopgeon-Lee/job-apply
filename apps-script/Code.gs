@@ -92,7 +92,7 @@ function getDashboard_() {
   monthlyApps.forEach(function(app) { monthlyCounts[app.student_id] = (monthlyCounts[app.student_id] || 0) + 1; });
   applications.forEach(function(app) { cumulativeCounts[app.student_id] = (cumulativeCounts[app.student_id] || 0) + 1; });
   const studentRows = students.map(function(student) {
-    return { studentId: student.student_id, name: student.name, weeklyCount: weeklyCounts[student.student_id] || 0, monthlyCount: monthlyCounts[student.student_id] || 0, cumulativeCount: cumulativeCounts[student.student_id] || 0, weeklyGoal: weeklyGoal };
+    return { name: student.name, weeklyCount: weeklyCounts[student.student_id] || 0, monthlyCount: monthlyCounts[student.student_id] || 0, cumulativeCount: cumulativeCounts[student.student_id] || 0, weeklyGoal: weeklyGoal };
   }).sort(function(a, b) { return b.weeklyCount - a.weeklyCount || a.name.localeCompare(b.name, 'ko'); });
   const names = {};
   students.forEach(function(student) { names[student.student_id] = student.name; });

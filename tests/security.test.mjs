@@ -22,6 +22,7 @@ function server() {
     LockService:{getScriptLock:()=>({waitLock(){},releaseLock(){}})}
   });
   vm.runInContext(readFileSync(new URL('../apps-script/Code.gs',import.meta.url),'utf8'),c);
+  c.realDashboard=c.getDashboard_;
   c.testRows=rows;c.writes=writes;
   vm.runInContext(`json_=p=>p;
     getStudents_=()=>[
@@ -108,4 +109,44 @@ test('public build versions and noindex remain aligned',()=>{
   const css=readFileSync(new URL('css/style.css',root),'utf8');
   assert.match(css,/\[hidden\]\s*\{\s*display:\s*none\s*!important/);
   assert.match(css,/\.text-button\s*\{[^}]*min-height:\s*44px/);
+});
+
+test('real dashboard projection excludes authentication identifiers',()=>{
+  const {c}=server();
+  vm.runInContext(`getStudents_=()=>[{student_id:'PRIVATE-ID',name:'Test',pin:'PRIVATE-HASH',active:true}];
+    getSettings_=()=>({weekly_goal:5});getApplications_=()=>[];
+    weekRange_=()=>({start:new Date(2026,9,5),end:new Date(2026,9,11)});
+    formatDate_=()=> '2026-10-05';Utilities.formatDate=()=> '2026-10';`,c);
+  const data=JSON.parse(JSON.stringify(c.realDashboard()));
+  assert.deepEqual(Object.keys(data.students[0]).sort(),['name','weeklyCount','monthlyCount','cumulativeCount','weeklyGoal'].sort());
+  assert.doesNotMatch(JSON.stringify(data),/PRIVATE-ID|PRIVATE-HASH|studentId|student_id|pin/i);
+});
+
+test('removed session API, URL validation, locking and report dependencies remain safe',()=>{
+  const {c}=server();
+  for(const action of ['login','logout','students']) assert.equal(c.doPost({parameter:{action}}).success,false);
+  for(const url of ['javascript:alert(1)','data:text/html,test','ftp://example.com']) assert.throws(()=>c.normalizeUrl_(url));
+  assert.equal(c.normalizeUrl_('https://example.com/jobs'),'https://example.com/jobs');
+  const code=readFileSync(new URL('../apps-script/Code.gs',import.meta.url),'utf8');
+  assert.doesNotMatch(code,/CacheService|SESSION_TTL_SECONDS|SESSION_PREFIX|requireSession_/);
+  assert.match(code,/getScriptLock/);
+  assert.match(code,/normalizeComparableUrl_\(app.job_url\)/);
+  const report=readFileSync(new URL('../apps-script/DailyReport.gs',import.meta.url),'utf8');
+  for(const fn of ['getStudents_','getApplications_','getSettings_','sheet_','weekRange_']) assert.ok(report.includes(fn));
+});
+
+test('actual create uses authenticated owner, rejects duplicate URL, and keeps applied-date counts',()=>{
+  const {c}=server();
+  vm.runInContext(`saved=[]; Utilities.getUuid=()=> 'QA-ID';
+    getApplications_=()=>[];getSettings_=()=>({weekly_goal:5});
+    weekRange_=()=>({start:new Date(2026,9,5),end:new Date(2026,9,11)});
+    formatDate_=()=> '2026-10-05';sheet_=()=>({appendRow:row=>saved.push(row)});`,c);
+  const params={student_id:'B',company:'Test',position:'Developer',site:'기타',job_url:'https://example.com/job',applied_date:'2026-10-05'};
+  const result=c.createApplication_(params,{student_id:'A',name:'Test A'});
+  assert.equal(c.saved[0][1],'A');
+  assert.equal(c.saved[0][7],'ACTIVE');
+  assert.equal(result.currentWeeklyCount,1);
+  vm.runInContext(`getApplications_=()=>[{student_id:'A',status:'ACTIVE',job_url:'https://example.com/job/'}]`,c);
+  assert.throws(()=>c.createApplication_(params,{student_id:'A',name:'Test A'}),/이미 등록/);
+  assert.equal(c.saved.length,1);
 });

@@ -102,10 +102,6 @@ button, input, select { font: inherit; }
 .form-card input::placeholder { color: #829ab1; }
 
 
-.auth-card { margin-top: 0; }
-.session-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 2px 14px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,.88); }
-.session-bar span { color:var(--muted); font-size:.86rem; }
-.session-bar strong { color:var(--navy); }
 .identity-card { margin:18px 0 8px; padding:16px; border:1px solid var(--line); border-radius:12px; background:var(--primary-soft); }
 .identity-card span,.identity-card small { display:block; color:var(--muted); font-size:.78rem; }
 .identity-card strong { display:block; margin:4px 0 2px; color:var(--navy); font-size:1.08rem; }
@@ -192,7 +188,7 @@ body{
 .portal-link{
   display:inline-flex;
   align-items:center;
-  min-height:42px;
+  min-height:44px;
   padding:8px 12px;
   border:1px solid var(--line);
   border-radius:9px;
@@ -246,9 +242,8 @@ body{
   gap:20px;
   align-items:start;
 }
-#dashboard .session-bar{grid-column:1/-1}
 #dashboard .summary-card{grid-column:1}
-#dashboard .section-card{grid-column:2;grid-row:2}
+#dashboard .section-card{grid-column:2;grid-row:1}
 #dashboard>section[aria-labelledby="recent-title"]{grid-column:1/-1}
 .summary-card,.section-card,.application-card,.state-card,.success-card{
   border-radius:14px;
@@ -267,10 +262,6 @@ body{
 .floating-action{
   background:var(--primary-dark);
   box-shadow:0 12px 28px rgba(11,23,57,.22);
-}
-.auth-card{
-  width:min(100%,620px);
-  margin:0 auto;
 }
 .register-main{
   width:min(calc(100% - 40px),760px);

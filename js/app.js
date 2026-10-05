@@ -7,6 +7,10 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#retry-button').addEventListener('click', loadDashboard);
   $('#delete-cancel').addEventListener('click', closeDeleteDialog);
   $('#delete-form').addEventListener('submit', deleteApplication);
+  $('#delete-dialog').addEventListener('close', () => {
+    $('#delete-form').reset();
+    state.deleting = null;
+  });
   $('#delete-dialog').addEventListener('click', (event) => {
     if (event.target === $('#delete-dialog')) closeDeleteDialog();
   });
@@ -72,7 +76,9 @@ function renderRecent(applications) {
     article.querySelector('.application-company').textContent = application.company;
     article.querySelector('.application-position').textContent = application.position;
     article.querySelector('.application-site').textContent = application.site;
-    article.querySelector('.job-link').href = application.jobUrl;
+    const jobLink = article.querySelector('.job-link');
+    if (/^https?:\/\/[^\s]+$/i.test(application.jobUrl)) jobLink.href = application.jobUrl;
+    else jobLink.hidden = true;
     article.querySelector('.delete-button').addEventListener('click', () => openDeleteDialog(application));
     return article;
   }));
