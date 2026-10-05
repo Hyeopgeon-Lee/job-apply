@@ -24,11 +24,11 @@
 1. Google Drive에서 빈 스프레드시트를 만들고 주소의 `/d/`와 `/edit` 사이 값을 복사합니다. 이것이 `SPREADSHEET_ID`입니다.
 2. 스프레드시트에서 **확장 프로그램 → Apps Script**를 엽니다.
 3. 이 저장소의 `apps-script/Code.gs` 전체를 Apps Script 편집기의 `Code.gs`에 붙여 넣습니다.
-4. 코드 첫 줄의 `SPREADSHEET_ID`를 복사한 ID로 바꿉니다.
+4. Apps Script **프로젝트 설정 → 스크립트 속성**에 `SPREADSHEET_ID` 키로 복사한 ID를 저장합니다.
 5. Apps Script 프로젝트 설정에서 시간대를 **(GMT+09:00) 서울**로 지정합니다.
 6. 상단 함수 선택에서 `setupSheets`를 골라 한 번 실행하고 권한을 승인합니다.
 
-`setupSheets()`는 다음 시트와 헤더, 초기 학생 13명, 기본 설정을 자동 생성합니다.
+`setupSheets()`는 다음 시트와 헤더, 기본 설정을 생성합니다. 학생 명단은 저장소에 넣지 않고 운영 Google Sheet의 `students` 시트에서 직접 관리합니다.
 
 ### students
 
@@ -103,7 +103,7 @@ DNS 반영 뒤 GitHub **Settings → Pages → Custom domain**에 `apply.k-bigda
 - PIN은 브라우저로 내려보내지 않으며 삭제 요청 때 Apps Script에서만 검증합니다.
 - 등록·중복 검사·삭제는 서버에서 다시 검증하며 동시 요청은 Script Lock으로 보호합니다.
 - URL은 `http://` 또는 `https://`만 허용합니다.
-- 로그인 없는 공개 서비스이므로 등록 자체의 신원 인증은 하지 않습니다. 시트와 Apps Script 프로젝트의 편집 권한은 관리자만 보유하세요.
+- 현재 등록 자체의 학생 인증은 아직 적용되지 않았습니다. `noindex`와 `robots.txt`는 검색 노출 억제일 뿐 접근제어가 아닙니다. 학생별 세션 인증을 추가하기 전까지 URL을 외부 홍보 채널에 노출하지 마세요.
 - Apps Script 할당량을 초과하면 일시적으로 요청이 실패할 수 있습니다.
 
 ## 취업지원 일일 이메일
