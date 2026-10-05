@@ -21,11 +21,9 @@ function handleRequest_(e, method) {
     const action = String(params.action || 'health');
     let data;
     if (method === 'GET' && action === 'health') data = { status: 'ok', time: new Date().toISOString() };
-    else if (method === 'POST' && action === 'login') data = login_(params);
-    else if (method === 'POST' && action === 'logout') data = logout_(params);
-    else if (method === 'POST' && action === 'dashboard') data = getDashboard_(requireSession_(params.token));
-    else if (method === 'POST' && action === 'create') data = createApplication_(params, requireSession_(params.token));
-    else if (method === 'POST' && action === 'delete') data = deleteApplication_(params, requireSession_(params.token));
+    else if (method === 'POST' && action === 'dashboard') data = getDashboard_();
+    else if (method === 'POST' && action === 'create') data = createApplication_(params, authenticateStudent_(params));
+    else if (method === 'POST' && action === 'delete') data = deleteApplication_(params, authenticateStudent_(params));
     else throw new Error('지원하지 않는 요청입니다.');
     return json_({ success: true, data: data });
   } catch (error) {
@@ -91,6 +89,15 @@ function requireSession_(token) {
   const student = getStudents_().find(function(row) { return row.student_id === String(studentId) && row.active; });
   if (!student) throw new Error('학생 정보를 확인할 수 없습니다.');
   CacheService.getScriptCache().put(SESSION_PREFIX + value, student.student_id, SESSION_TTL_SECONDS);
+  return student;
+}
+
+function authenticateStudent_(params) {
+  const studentId = required_(params.student_id, '학번을 입력해 주세요.');
+  const pin = String(params.pin || '').trim();
+  if (!/^\d{4}$/.test(pin)) throw new Error('4자리 PIN을 입력해 주세요.');
+  const student = getStudents_().find(function(row) { return row.student_id === studentId && row.active; });
+  if (!student || !verifyStudentPin_(student.pin, pin)) throw new Error('학번 또는 PIN을 확인해 주세요.');
   return student;
 }
 
