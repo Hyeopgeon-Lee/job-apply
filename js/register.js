@@ -1,28 +1,23 @@
 import { api } from './api.js';
 
 const $ = (selector) => document.querySelector(selector);
+const TOKEN_KEY = 'jobApplyToken';
+const STUDENT_KEY = 'jobApplyStudent';
+let token = '';
+let student = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-  $('#applied-date').value = todayInSeoul();
-  $('#application-form').addEventListener('submit', submitApplication);
-  loadStudents();
-});
-
-async function loadStudents() {
-  if (!api.configured()) {
-    showFormError('서비스 연결 설정이 필요합니다. 관리자에게 문의해 주세요.');
+  token = sessionStorage.getItem(TOKEN_KEY) || '';
+  try { student = JSON.parse(sessionStorage.getItem(STUDENT_KEY) || 'null'); } catch (_) {}
+  if (!token || !student?.studentId) {
+    location.replace('index.html');
     return;
   }
-  try {
-    const students = await api.getStudents();
-    const select = $('#student');
-    students.forEach((student) => select.add(new Option(student.name, student.studentId)));
-    select.disabled = false;
-    $('#submit-button').disabled = false;
-  } catch (error) {
-    showFormError(error.message);
-  }
-}
+  $('#current-student-name').textContent = student.name;
+  $('#current-student-id').textContent = student.studentId;
+  $('#applied-date').value = todayInSeoul();
+  $('#application-form').addEventListener('submit', submitApplication);
+});
 
 async function submitApplication(event) {
   event.preventDefault();
@@ -34,7 +29,7 @@ async function submitApplication(event) {
   button.textContent = '등록 중...';
   try {
     const payload = Object.fromEntries(new FormData(form));
-    const result = await api.createApplication(payload);
+    const result = await api.createApplication(payload, token);
     $('#form-card').hidden = true;
     $('#success-name').textContent = result.studentName;
     $('#before-count').textContent = `${result.previousWeeklyCount}건`;
@@ -48,6 +43,12 @@ async function submitApplication(event) {
     $('#success-card').hidden = false;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (error) {
+    if (/로그인|만료|학생 정보를/.test(error.message)) {
+      sessionStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem(STUDENT_KEY);
+      location.replace('index.html');
+      return;
+    }
     showFormError(error.message);
     button.disabled = false;
     button.textContent = '지원현황 등록하기';
