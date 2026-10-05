@@ -16,9 +16,7 @@ async function request(action, params = {}) {
 
 export const api = {
   configured: isApiConfigured,
-  login: (studentId, pin) => request('login', { student_id: studentId, pin }),
-  logout: (token) => request('logout', { token }),
-  getDashboard: (token) => request('dashboard', { token }),
-  createApplication: (payload, token) => request('create', { ...payload, token }),
-  deleteApplication: (applicationId, token) => request('delete', { application_id: applicationId, token }),
+  getDashboard: () => request('dashboard'),
+  createApplication: (payload) => request('create', payload),
+  deleteApplication: (applicationId, studentId, pin) => request('delete', { application_id: applicationId, student_id: studentId, pin }),
 };
