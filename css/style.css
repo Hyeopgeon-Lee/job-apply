@@ -100,6 +100,15 @@ button, input, select { font: inherit; }
 .form-card select:disabled { background: #f0f4f8; }
 .form-card input::placeholder { color: #829ab1; }
 
+
+.auth-card { margin-top: 0; }
+.session-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 2px 14px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,.88); }
+.session-bar span { color:var(--muted); font-size:.86rem; }
+.session-bar strong { color:var(--navy); }
+.identity-card { margin:18px 0 8px; padding:16px; border:1px solid var(--line); border-radius:12px; background:var(--primary-soft); }
+.identity-card span,.identity-card small { display:block; color:var(--muted); font-size:.78rem; }
+.identity-card strong { display:block; margin:4px 0 2px; color:var(--navy); font-size:1.08rem; }
+
 @media (min-width: 700px) {
   body { padding-bottom: 120px; }
   .site-header { padding-top: 42px; }
