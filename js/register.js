@@ -12,8 +12,9 @@ function initRecruitmentPicker() {
   const select = $('#recruitment');
   if (!select) return;
 
+  const todayKst = new Intl.DateTimeFormat('en-CA', { timeZone:'Asia/Seoul', year:'numeric', month:'2-digit', day:'2-digit' }).format(new Date());
   const jobs = (window.K_BIGDATA_RECRUITMENTS || [])
-    .filter((job) => job && job.active !== false)
+    .filter((job) => job && job.active !== false && (job.deadlineType !== 'DATE' || !job.deadline || job.deadline >= todayKst))
     .sort((a, b) => String(a.company).localeCompare(String(b.company), 'ko'));
 
   if (!jobs.length) {
@@ -24,7 +25,8 @@ function initRecruitmentPicker() {
   jobs.forEach((job) => {
     const option = document.createElement('option');
     option.value = job.id;
-    option.textContent = `${job.company} · ${job.site}`;
+    const deadline = job.deadlineType === 'UNTIL_FILLED' ? '채용시 마감' : (job.deadline ? '마감 ' + job.deadline : '');
+    option.textContent = [job.company, job.site, deadline].filter(Boolean).join(' · ');
     select.append(option);
   });
 
