@@ -26,7 +26,7 @@ function initRecruitmentPicker() {
     const option = document.createElement('option');
     option.value = job.id;
     const deadline = job.deadlineType === 'UNTIL_FILLED' ? '채용시 마감' : (job.deadline ? '마감 ' + job.deadline : '');
-    option.textContent = [job.company, job.site, deadline].filter(Boolean).join(' · ');
+    option.textContent = [job.company, job.position || job.title, deadline].filter(Boolean).join(' · ');
     select.append(option);
   });
 
@@ -42,6 +42,7 @@ function initRecruitmentPicker() {
 function applyRecruitment(jobId, jobs) {
   const company = $('#company');
   const site = $('#site');
+  const position = $('#position');
   const jobUrl = $('#job-url');
   const hiddenId = $('#job-id');
   const help = $('#recruitment-help');
@@ -50,8 +51,9 @@ function applyRecruitment(jobId, jobs) {
     hiddenId.value = '';
     if (company.dataset.recruitmentFilled === 'true') company.value = '';
     if (site.dataset.recruitmentFilled === 'true') site.value = '';
+    if (position.dataset.recruitmentFilled === 'true') position.value = '';
     if (jobUrl.dataset.recruitmentFilled === 'true') jobUrl.value = '';
-    [company, site, jobUrl].forEach((field) => {
+    [company, site, position, jobUrl].forEach((field) => {
       delete field.dataset.recruitmentFilled;
       field.classList.remove('auto-filled');
     });
@@ -66,11 +68,22 @@ function applyRecruitment(jobId, jobs) {
   company.value = job.company || '';
   site.value = job.site || '';
   jobUrl.value = job.url || '';
+  if (job.position) {
+    position.value = job.position;
+    position.dataset.recruitmentFilled = 'true';
+    position.classList.add('auto-filled');
+  } else if (position.dataset.recruitmentFilled === 'true') {
+    position.value = '';
+    delete position.dataset.recruitmentFilled;
+    position.classList.remove('auto-filled');
+  }
   [company, site, jobUrl].forEach((field) => {
     field.dataset.recruitmentFilled = 'true';
     field.classList.add('auto-filled');
   });
-  help.textContent = '기업명·지원사이트·채용공고 URL을 자동 입력했습니다. 실제 공고를 확인한 뒤 지원직무를 정확히 입력해 주세요.';
+  help.textContent = job.position
+    ? '기업명·지원직무·지원사이트·채용공고 URL을 자동 입력했습니다. 실제 공고와 일치하는지 확인해 주세요.'
+    : '기업명·지원사이트·채용공고 URL을 자동 입력했습니다. 실제 공고를 확인한 뒤 지원직무를 정확히 입력해 주세요.';
 }
 
 async function submitApplication(event) {
