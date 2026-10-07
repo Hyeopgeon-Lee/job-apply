@@ -309,3 +309,29 @@ body{
   .service-tabs .container{gap:6px}
   .service-tabs a{flex:1;padding-inline:8px}
 }
+
+
+/* Recommended recruitment picker */
+.recruitment-picker{
+  margin:20px 0 6px;
+  padding:18px;
+  border:1px solid #c8d6ee;
+  border-radius:12px;
+  background:#f7f9fd;
+}
+.recruitment-picker label{margin-top:0}
+.recruitment-picker select{background:#fff}
+.field-help{
+  margin:9px 2px 0;
+  color:var(--muted);
+  font-size:.82rem;
+  line-height:1.65;
+}
+.form-card input.auto-filled,
+.form-card select.auto-filled{
+  border-color:#aebfe0;
+  background:#f2f6fc;
+}
+@media(max-width:520px){
+  .recruitment-picker{padding:14px}
+}
