@@ -27,6 +27,14 @@
         <div class="identity-card" aria-label="학생 확인"><span>학생 확인</span><strong>학번과 PIN으로 본인 확인</strong><small>지원 등록 시에만 본인 확인합니다.</small></div>
         <label for="student-id">학번 <span>필수</span></label><input id="student-id" name="student_id" inputmode="numeric" autocomplete="username" required>
         <label for="student-pin">4자리 PIN <span>필수</span></label><input id="student-pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="current-password" required>
+        <div class="recruitment-picker">
+          <label for="recruitment">학과 추천 채용공고 <span>선택</span></label>
+          <select id="recruitment">
+            <option value="">목록에 없는 채용공고 직접 입력</option>
+          </select>
+          <input id="job-id" name="job_id" type="hidden">
+          <p id="recruitment-help" class="field-help">추천 공고를 선택하면 기업명·지원사이트·채용공고 URL이 자동 입력됩니다.</p>
+        </div>
         <label for="company">기업명 <span>필수</span></label><input id="company" name="company" maxlength="100" required placeholder="예: ABC정보기술">
         <label for="position">지원직무 <span>필수</span></label><input id="position" name="position" maxlength="100" required placeholder="예: Java 백엔드 개발자">
         <label for="site">지원사이트 <span>필수</span></label><select id="site" name="site" required><option value="">지원사이트를 선택해 주세요</option><option>사람인</option><option>잡코리아</option><option>원티드</option><option>고용24</option><option>기업 채용사이트</option><option>기타</option></select>
@@ -37,6 +45,7 @@
     </section>
     <section id="success-card" class="success-card" hidden><div class="success-check" aria-hidden="true">✓</div><p class="eyebrow">등록 완료</p><h2>등록되었습니다.</h2><strong id="success-name" class="success-name"></strong><p class="count-change">이번 주 <span id="before-count"></span> <b>→</b> <span id="after-count"></span></p><p id="goal-message" class="success-message"></p><a class="button button-primary" href="index.html">메인 화면으로</a></section>
   </main>
-  <script type="module" src="js/register.js?v=20261005-public-1"></script>
+  <script src="https://portal.k-bigdata.kr/data/recruitments.js?v=20261007-1"></script>
+  <script type="module" src="js/register.js?v=20261007-recruit-1"></script>
 </body>
 </html>
