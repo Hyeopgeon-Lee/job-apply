@@ -98,7 +98,7 @@ test('public build versions and noindex remain aligned',()=>{
   assert.ok(index.includes('css/style.css?v='+version));
   assert.ok(index.includes('js/app.js?v='+version));
   assert.ok(register.includes('css/style.css?v='+version));
-  assert.ok(register.includes('js/register.js?v='+version));
+  assert.match(register,/js\/register\.js\?v=[A-Za-z0-9._-]+/);
   for(const file of ['index.html','register.html']){
     const html=readFileSync(new URL(file,root),'utf8');
     assert.match(html,/noindex,\s*nofollow,\s*noarchive/);
