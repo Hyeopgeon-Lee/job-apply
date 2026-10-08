@@ -73,6 +73,12 @@
 4. 대시보드가 로그인 없이 열리는지 확인합니다.
 5. 지원 등록과 삭제 시 학번+4자리 PIN 검증이 정상 동작하는지 확인합니다.
 
+## Apps Script 자동배포
+
+GitHub의 `apps-script/`를 Apps Script 원본 소스로 사용하며, GAS 관련 변경이 `main`에 반영되면 GitHub Actions가 테스트 후 clasp로 기존 Web App 배포를 갱신할 수 있습니다.
+
+최초 1회 GitHub Actions Secret 3개 설정이 필요합니다. 자세한 절차는 [GAS_AUTO_DEPLOY](docs/GAS_AUTO_DEPLOY.md)를 참고합니다.
+
 ## 3. GitHub Pages 활성화
 
 1. GitHub 저장소 **Settings → Pages**로 이동합니다.
