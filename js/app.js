@@ -1,4 +1,5 @@
 import { api } from './api.js?v=20261005-public-1';
+import { classifyApplication } from './recruitment-match.js?v=20261009-1';
 
 const $ = (selector) => document.querySelector(selector);
 const state = { deleting: null };
@@ -65,15 +66,20 @@ function renderRecent(applications) {
   list.replaceChildren(...applications.map((application) => {
     const article = document.createElement('article');
     article.className = 'application-card';
+    const recommendation = classifyApplication(application, window.K_BIGDATA_RECRUITMENTS);
     article.innerHTML = `
       <div class="application-head"><strong class="application-student"></strong><span class="application-date"></span></div>
-      <h3 class="application-company"></h3>
+      <div class="application-company-row"><h3 class="application-company"></h3><span class="recommendation-badge"></span></div>
       <p class="application-position"></p>
       <p class="application-site"></p>
       <div class="application-actions"><a class="button button-secondary job-link" target="_blank" rel="noopener noreferrer">채용공고 보기</a><button class="text-button delete-button" type="button">삭제</button></div>`;
     article.querySelector('.application-student').textContent = application.studentName;
     article.querySelector('.application-date').textContent = application.appliedDate.replaceAll('-', '.');
     article.querySelector('.application-company').textContent = application.company;
+    const badge = article.querySelector('.recommendation-badge');
+    badge.textContent = recommendation.label;
+    badge.dataset.kind = recommendation.kind;
+    badge.title = recommendation.description;
     article.querySelector('.application-position').textContent = application.position;
     article.querySelector('.application-site').textContent = application.site;
     const jobLink = article.querySelector('.job-link');
