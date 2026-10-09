@@ -335,3 +335,58 @@ body{
 @media(max-width:520px){
   .recruitment-picker{padding:14px}
 }
+
+/* 최근 지원 기업의 학과 추천 여부: 모바일/PC 공통 */
+.classification-note{
+  margin:-5px 4px 14px;
+  color:var(--muted);
+  font-size:.8rem;
+  line-height:1.7;
+}
+.application-company-row{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px 10px;
+  margin:16px 0 7px;
+}
+.application-company-row .application-company{
+  min-width:0;
+  overflow-wrap:anywhere;
+  margin:0;
+}
+.recommendation-badge{
+  display:inline-flex;
+  align-items:center;
+  max-width:100%;
+  padding:5px 9px;
+  border:1px solid #d0d9e8;
+  border-radius:7px;
+  background:#f2f5fa;
+  color:#3f4e63;
+  font-size:.74rem;
+  font-weight:750;
+  line-height:1.35;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.recommendation-badge[data-kind="posting"]{
+  border-color:#b6dfc4;
+  background:#e9f7ee;
+  color:#136236;
+}
+.recommendation-badge[data-kind="company"]{
+  border-color:#c6d6f5;
+  background:#eff5ff;
+  color:#194b91;
+}
+.recommendation-badge[data-kind="review"],
+.recommendation-badge[data-kind="unavailable"]{
+  border-color:#f4d69a;
+  background:#fff8e8;
+  color:#815414;
+}
+@media(max-width:420px){
+  .classification-note{font-size:.77rem;line-height:1.65}
+  .application-company-row{gap:7px}
+}
