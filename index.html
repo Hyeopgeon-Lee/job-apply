@@ -8,7 +8,7 @@
   <meta name="description" content="빅데이터소프트웨어공학과 학생들의 입사지원 현황">
   <title>BigData Job Apply</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/style.css?v=20261005-public-1">
+  <link rel="stylesheet" href="css/style.css?v=20261005-public-1-recommend-20261009">
 </head>
 <body>
   <header class="site-header">
@@ -43,6 +43,7 @@
       </section>
       <section aria-labelledby="recent-title">
         <div class="section-heading outside"><div><p class="eyebrow">새로운 도전</p><h2 id="recent-title">최근 입사지원</h2></div></div>
+        <p class="classification-note">기업명과 채용공고 URL을 학과 추천 목록과 비교한 결과입니다. 현재 보유한 목록 기준이며, 과거 추천 이력을 모두 보장하지 않습니다.</p>
         <p id="recent-empty" class="empty-card" hidden>아직 등록된 지원 내역이 없습니다.<br>첫 지원 현황을 등록해 보세요!</p>
         <div id="recent-list" class="recent-list"></div>
       </section>
@@ -61,6 +62,7 @@
       <div class="modal-actions"><button id="delete-cancel" class="button button-ghost" type="button">취소</button><button id="delete-submit" class="button button-danger" type="submit">삭제하기</button></div>
     </form>
   </dialog>
-  <script type="module" src="js/app.js?v=20261005-public-1"></script>
+  <script src="https://portal.k-bigdata.kr/data/recruitments.js?v=20261009-match-1"></script>
+  <script type="module" src="js/app.js?v=20261005-public-1-recommend-20261009"></script>
 </body>
 </html>
